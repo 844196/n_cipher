@@ -5,4 +5,12 @@ $LOAD_PATH.unshift(lib_dir)
 
 require 'test/unit'
 
+if ENV['CI']
+  require 'coveralls'
+  Coveralls.wear!
+
+  SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[Coveralls::SimpleCov::Formatter]
+  SimpleCov.start 'test_frameworks'
+end
+
 exit Test::Unit::AutoRunner.run(true, test_dir, ['--verbose', '--progress-row-max=0'])
