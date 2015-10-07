@@ -3,7 +3,7 @@ require 'n_cipher'
 class EncodeTest < Test::Unit::TestCase
   test '通常利用想定' do
     assert_equal(
-      'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん',
+      'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
       NCipher::encode('にゃんぱす')
     )
   end
@@ -11,21 +11,21 @@ class EncodeTest < Test::Unit::TestCase
   sub_test_case 'オプション指定' do
     test 'シード値のみ指定' do
       assert_equal(
-        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう',
+        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう〜',
         NCipher::encode('にゃんぱす', seed: 'おうどん')
       )
     end
 
     test 'デリミタのみ指定' do
       assert_equal(
-        'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん',
+        'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
         NCipher::encode('にゃんぱす', delimiter: '〜')
       )
     end
 
     test 'シード値、デリミタ両方指定' do
       assert_equal(
-        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう',
+        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう〜',
         NCipher::encode('にゃんぱす', seed: 'おうどん', delimiter: '〜')
       )
     end

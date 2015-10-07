@@ -20,7 +20,7 @@ module NCipher
 
     def encode(string, seed: 'にゃんぱす', delimiter: '〜')
       raise ArgumentError if is_empty?(string) or is_empty?(seed) or is_empty?(delimiter) or seed.size > 10
-      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)) }.join(delimiter)
+      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
   end
 
