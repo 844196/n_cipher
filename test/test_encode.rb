@@ -56,17 +56,16 @@ class EncodeTest < Test::Unit::TestCase
       end
     end
 
-    sub_test_case 'nil' do
-      test '文字列がnil' do
-        assert_raise(ArgumentError) { NCipher::encode(nil) }
+    sub_test_case '型不正' do
+      data do
+        object = [123, [:foo, :bar], {foo: 'hoge', bar: 'fuga'}, :foo, nil]
+        object.map {|obj| [obj.class.to_s, obj] }.to_h
       end
 
-      test 'シード値がnil' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: nil) }
-      end
-
-      test 'デリミタがnil' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', delimiter: nil) }
+      test 'String以外のオブジェクトを引数に指定' do |obj|
+        assert_raise(TypeError) { NCipher::decode(obj, seed: 'にゃんぱす', delimiter: '〜') }
+        assert_raise(TypeError) { NCipher::decode('にゃんぱす', seed: obj, delimiter: '〜') }
+        assert_raise(TypeError) { NCipher::decode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
       end
     end
   end
