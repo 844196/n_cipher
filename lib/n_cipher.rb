@@ -23,6 +23,28 @@ module NCipher
 
       string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
+
+    def decode(string, seed: , delimiter: )
+      [string, seed, delimiter].each do |obj|
+        raise TypeError, "#{obj} is #{obj.class}. Argument must be string object." unless obj.kind_of?(String)
+        raise ArgumentError, 'Invalid argument.' if obj.empty?
+      end
+
+      seed_include_in_string = -> { (string.split(//) - delimiter.split(//)).map {|ele| seed.split(//).index(ele) }.all? }
+      delimiter_inclide_in_string = -> { delimiter.split(//).uniq.sort.map {|ele| string.include?(ele) }.all? }
+      seed_and_delimiter_dont_overlap = -> { (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort) == [] }
+
+      case false
+      when seed_include_in_string.call
+        raise ArgumentError, 'Invalid seed.'
+      when delimiter_inclide_in_string.call
+        raise ArgumentError, 'Invalid delimiter.'
+      when seed_and_delimiter_dont_overlap.call
+        raise ArgumentError, 'Seed and delimiter are deplicated.'
+      end
+
+      string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
+    end
   end
 
   private_class_method :convert_table
