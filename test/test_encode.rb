@@ -63,9 +63,9 @@ class EncodeTest < Test::Unit::TestCase
       end
 
       test 'String以外のオブジェクトを引数に指定' do |obj|
-        assert_raise(TypeError) { NCipher::decode(obj, seed: 'にゃんぱす', delimiter: '〜') }
-        assert_raise(TypeError) { NCipher::decode('にゃんぱす', seed: obj, delimiter: '〜') }
-        assert_raise(TypeError) { NCipher::decode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
+        assert_raise(TypeError) { NCipher::encode(obj, seed: 'にゃんぱす', delimiter: '〜') }
+        assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: obj, delimiter: '〜') }
+        assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
       end
     end
   end
