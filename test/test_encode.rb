@@ -36,6 +36,10 @@ class EncodeTest < Test::Unit::TestCase
       test 'シード値とデリミタで値が重複' do
         assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'あい', delimiter: 'あ') }
       end
+
+      test 'シード値内で値が重複' do
+        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'ああ') }
+      end
     end
 
     sub_test_case '文字数' do

@@ -21,6 +21,7 @@ module NCipher
       end
       raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2,10)
       raise ArgumentError, 'Seed and delimiter are deplicated.' unless (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort) == []
+      raise ArgumentError, 'Invalid seed.' unless seed.split(//).size == seed.split(//).uniq.size
 
       string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
