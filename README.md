@@ -1,6 +1,6 @@
 # NCipher
 
-[![Gem](https://img.shields.io/gem/v/n_cipher.svg)]()
+[![Gem](https://img.shields.io/gem/v/n_cipher.svg)](https://rubygems.org/gems/n_cipher)
 [![Travis branch](https://img.shields.io/travis/844196/n_cipher.svg)](https://travis-ci.org/844196/n_cipher)
 [![Coveralls branch](https://img.shields.io/coveralls/844196/n_cipher/master.svg)](https://coveralls.io/github/844196/n_cipher)
 [![Code Climate](https://img.shields.io/codeclimate/github/844196/n_cipher.svg)](https://codeclimate.com/github/844196/n_cipher)
