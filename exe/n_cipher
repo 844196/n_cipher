@@ -9,7 +9,8 @@ class NCipherCLI < Thor
   class_option :delimiter, :type => :string, :default => '〜'
 
   desc 'encode <STRING>', '文字列をN暗号化'
-  def encode(string)
+  def encode(string=nil)
+    string ||= $stdin.read.chomp
     STDOUT.puts NCipher::encode(string, seed: options[:seed], delimiter: options[:delimiter])
   rescue => e
     STDERR.puts e.message
@@ -17,7 +18,8 @@ class NCipherCLI < Thor
   end
 
   desc 'decode <STRING>', 'N暗号文字列を復号化'
-  def decode(string)
+  def decode(string=nil)
+    string ||= $stdin.read.chomp
     STDOUT.puts NCipher::decode(string, seed: options[:seed], delimiter: options[:delimiter])
   rescue => e
     STDERR.puts e.message
