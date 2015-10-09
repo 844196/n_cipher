@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'n_cipher'
+require 'thor'
+
+class NCipherCLI < Thor
+  map %w(-v --version) => :version
+  class_option :seed, :type => :string, :default => 'にゃんぱす'
+  class_option :delimiter, :type => :string, :default => '〜'
+
+  desc 'encode <STRING>', '文字列をN暗号化'
+  def encode(string)
+    STDOUT.puts NCipher::encode(string, seed: options[:seed], delimiter: options[:delimiter])
+  rescue => e
+    STDERR.puts e.message
+    exit 1
+  end
+
+  desc 'decode <STRING>', 'N暗号文字列を復号化'
+  def decode(string)
+    STDOUT.puts NCipher::decode(string, seed: options[:seed], delimiter: options[:delimiter])
+  rescue => e
+    STDERR.puts e.message
+    exit 1
+  end
+
+  desc 'version', 'Print version'
+  def version
+    STDOUT.puts NCipher::VERSION
+    exit 0
+  end
+end
+
+NCipherCLI.start
