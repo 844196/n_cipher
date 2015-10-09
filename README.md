@@ -38,3 +38,29 @@ NCipher::decode(
   seed: 'おうどん', delimiter: 'ひげ')
 #=> "にゃんぱす"
 ```
+
+```shellsession
+$ n_cipher --help
+Commands:
+  n_cipher decode <STRING>  # N暗号文字列を復号化
+  n_cipher encode <STRING>  # 文字列をN暗号化
+  n_cipher help [COMMAND]   # Describe available commands or one specific command
+  n_cipher version          # Print version
+
+Options:
+  [--seed=SEED]
+                           # Default: にゃんぱす
+  [--delimiter=DELIMITER]
+                           # Default: 〜
+
+$ # encode
+$ n_cipher encode 'にゃんぱす'
+ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜
+
+$ n_cipher encode --seed 'おうどん' --delimiter 'ひげ' 'にゃんぱす'
+んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ
+
+$ # decode
+$ n_cipher decode --seed 'おうどん' --delimiter 'ひげ' 'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ'
+にゃんぱす
+```
