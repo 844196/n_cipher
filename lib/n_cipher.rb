@@ -3,7 +3,7 @@ require "n_cipher/version"
 module NCipher
   module Helper
     def convert_table(string, mode)
-      table = string.split('').map.with_index(0) {|c,i| [i.to_s, c] }.to_h
+      table = string.chars.map.with_index(0) {|c,i| [i.to_s, c] }.to_h
       case mode
       when :encode then table
       when :decode then table.invert
@@ -16,11 +16,11 @@ module NCipher
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
       raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2, 10)
-      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort).size.zero?
+      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars.uniq.sort & delimiter.chars.uniq.sort).size.zero?
       # シード値が重複していないか？
       #   OK: 'あいう'
       #   NG: 'ああい'（「あ」が重複）
-      raise ArgumentError, 'Character is duplicated in seed.' unless seed.split(//).size == seed.split(//).uniq.size
+      raise ArgumentError, 'Character is duplicated in seed.' unless seed.chars.size == seed.chars.uniq.size
     end
   end
 
@@ -36,9 +36,9 @@ module NCipher
     def decode(string, seed: , delimiter: )
       common_argument_check(string, seed, delimiter)
       [seed, delimiter].each do |ele|
-        raise ArgumentError, "'#{ele}' is not include in the cipher string." unless ele.split(//).map {|char| string.include?(char) }.all?
+        raise ArgumentError, "'#{ele}' is not include in the cipher string." unless ele.chars.map {|char| string.include?(char) }.all?
       end
-      raise ArgumentError 'Invalid cipher string.' unless (string.split(//) - "#{seed}#{delimiter}".split(//)).size.zero?
+      raise ArgumentError 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
 
       string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
     end
