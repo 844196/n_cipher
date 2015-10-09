@@ -9,45 +9,40 @@ module NCipher
       when :decode then table.invert
       end
     end
+
+    def common_argument_check(string, seed, delimiter)
+      [string, seed, delimiter].each do |obj|
+        raise TypeError, "#{obj} is #{obj.class} object. Argument must be string object." unless obj.kind_of?(String)
+        raise ArgumentError, 'Invalid argument.' if obj.empty?
+      end
+      raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2, 10)
+      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort).size.zero?
+      # シード値が重複していないか？
+      #   OK: 'あいう'
+      #   NG: 'ああい'（「あ」が重複）
+      raise ArgumentError, 'Character is duplicated in seed.' unless seed.split(//).size == seed.split(//).uniq.size
+    end
   end
 
   class << self
     include NCipher::Helper
 
     def encode(string, seed: 'にゃんぱす', delimiter: '〜')
-      [string, seed, delimiter].each do |obj|
-        raise TypeError, "#{obj} is #{obj.class}. Argument must be string object." unless obj.kind_of?(String)
-        raise ArgumentError, 'Invalid argument.' if obj.empty?
-      end
-      raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2,10)
-      raise ArgumentError, 'Seed and delimiter are deplicated.' unless (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort) == []
-      raise ArgumentError, 'Invalid seed.' unless seed.split(//).size == seed.split(//).uniq.size
+      common_argument_check(string, seed, delimiter)
 
       string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
 
     def decode(string, seed: , delimiter: )
-      [string, seed, delimiter].each do |obj|
-        raise TypeError, "#{obj} is #{obj.class}. Argument must be string object." unless obj.kind_of?(String)
-        raise ArgumentError, 'Invalid argument.' if obj.empty?
+      common_argument_check(string, seed, delimiter)
+      [seed, delimiter].each do |ele|
+        raise ArgumentError, "'#{ele}' is not include in the cipher string." unless ele.split(//).map {|char| string.include?(char) }.all?
       end
-
-      seed_include_in_string = -> { (string.split(//) - delimiter.split(//)).map {|ele| seed.split(//).index(ele) }.all? }
-      delimiter_inclide_in_string = -> { delimiter.split(//).uniq.sort.map {|ele| string.include?(ele) }.all? }
-      seed_and_delimiter_dont_overlap = -> { (seed.split(//).uniq.sort & delimiter.split(//).uniq.sort) == [] }
-
-      case false
-      when seed_include_in_string.call
-        raise ArgumentError, 'Invalid seed.'
-      when delimiter_inclide_in_string.call
-        raise ArgumentError, 'Invalid delimiter.'
-      when seed_and_delimiter_dont_overlap.call
-        raise ArgumentError, 'Seed and delimiter are deplicated.'
-      end
+      raise ArgumentError 'Invalid cipher string.' unless (string.split(//) - "#{seed}#{delimiter}".split(//)).size.zero?
 
       string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
     end
   end
 
-  private_class_method :convert_table
+  private_class_method :convert_table, :common_argument_check
 end
