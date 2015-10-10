@@ -35,9 +35,7 @@ module NCipher
 
     def decode(string, seed: , delimiter: )
       common_argument_check(string, seed, delimiter)
-      [seed, delimiter].each do |ele|
-        raise ArgumentError, "'#{ele}' is not include in the cipher string." unless ele.chars.map {|char| string.include?(char) }.all?
-      end
+      raise ArgumentError, 'Delimiter is not include in the cipher string.' unless delimiter.chars.map {|char| string.include?(char) }.all?
       raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
 
       string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
