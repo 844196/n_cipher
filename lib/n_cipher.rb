@@ -16,11 +16,11 @@ module NCipher
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
       raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2, 10)
-      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars.uniq.sort & delimiter.chars.uniq.sort).size.zero?
+      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       # シード値が重複していないか？
       #   OK: 'あいう'
       #   NG: 'ああい'（「あ」が重複）
-      raise ArgumentError, 'Character is duplicated in seed.' unless seed.chars.size == seed.chars.uniq.size
+      raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
     end
   end
 
@@ -35,7 +35,7 @@ module NCipher
 
     def decode(string, seed: , delimiter: )
       common_argument_check(string, seed, delimiter)
-      raise ArgumentError, 'Delimiter is not include in the cipher string.' unless delimiter.chars.map {|char| string.include?(char) }.all?
+      raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
       raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
 
       string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
