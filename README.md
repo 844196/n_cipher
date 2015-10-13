@@ -6,6 +6,7 @@
 [![Coveralls branch](https://img.shields.io/coveralls/844196/n_cipher/master.svg)](https://coveralls.io/github/844196/n_cipher)
 [![Code Climate](https://img.shields.io/codeclimate/github/844196/n_cipher.svg)](https://codeclimate.com/github/844196/n_cipher)
 [![Issues](http://img.shields.io/github/issues/844196/n_cipher.svg)](https://github.com/844196/n_cipher/issues)
+[![Inline docs](http://inch-ci.org/github/844196/n_cipher.svg?branch=master&style=shields)](http://inch-ci.org/github/844196/n_cipher)
 
 ![](https://cloud.githubusercontent.com/assets/4990822/10408480/9bf5d63a-6f39-11e5-9568-55e24afcbdc5.png)
 
