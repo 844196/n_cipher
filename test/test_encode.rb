@@ -1,78 +1,83 @@
 require 'n_cipher'
 
 class EncodeTest < Test::Unit::TestCase
-  test '通常利用想定' do
-    assert_equal(
-      'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
-      NCipher::encode('にゃんぱす')
-    )
-  end
-
-  sub_test_case 'オプション指定' do
-    test 'シード値のみ指定' do
-      assert_equal(
-        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう〜',
-        NCipher::encode('にゃんぱす', seed: 'おうどん')
-      )
+  sub_test_case '正常系' do
+    test '文字列のみ' do
+      assert_equal('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
+                   NCipher::encode('にゃんぱす'))
     end
 
-    test 'デリミタのみ指定' do
-      assert_equal(
-        'ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
-        NCipher::encode('にゃんぱす', delimiter: '〜')
-      )
-    end
+    sub_test_case '引数' do
+      data(
+        'シード値のみ指定' => [{seed: 'えお'},
+                               'おおえええええおええええおえ〜おおえええええおえええおええ〜おおえええええおえええおおえ〜'],
+        'デリミタのみ指定' => [{delimiter: 'か'},
+                               'ぱすぱすにすかぱすぱすゃゃかぱすぱすゃぱか'],
+        'すべて指定'       => [{seed: 'えお', delimiter: 'か'},
+                               'おおえええええおええええおえかおおえええええおえええおええかおおえええええおえええおおえか'])
 
-    test 'シード値、デリミタ両方指定' do
-      assert_equal(
-        'んおおうどどん〜んおおどおおん〜んおおどうおん〜んおおうんおう〜んおおううどう〜',
-        NCipher::encode('にゃんぱす', seed: 'おうどん', delimiter: '〜')
-      )
+      test 'オプション指定' do |(options, result)|
+        assert_equal(result, NCipher.send(:encode, 'あいう', options))
+      end
     end
   end
 
   sub_test_case '異常系' do
-    sub_test_case '重複' do
+    sub_test_case 'ArgumentError' do
+      data do
+        string      = ['あいう', '', '']
+        seed        = ['', 'えお', '']
+        delimiter   = ['', '', 'か']
+        combination = string.product(seed, delimiter).uniq.reject {|e| e.none?(&''.method(:==)) }
+
+        combination.map do |(str, sed, deli)|
+          [[str, sed, deli].inspect, [str, {seed: sed, delimiter: deli}]]
+        end
+      end
+
+      test '空文字' do |(string, options)|
+        assert_raise(ArgumentError.new('Invalid argument.')) do
+          NCipher.send(:encode, string, options)
+        end
+      end
+
+      data do
+        [*1..3, *9..11].map {|i| ["#{i}文字", [*'0'..'9', *'a'..'z', *'A'..'Z'][0, i].join] }.to_h
+      end
+
+      test 'シード値文字数' do |seed|
+        case seed.size
+        when 2..10
+          assert_nothing_raised do
+            NCipher.send(:encode, 'あいう', seed: seed)
+          end
+        else
+          assert_raise(ArgumentError.new('Seed must be 2 to 10 characters.')) do
+            NCipher.send(:encode, 'あいう', seed: seed)
+          end
+        end
+      end
+
       test 'シード値とデリミタで値が重複' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'あい', delimiter: 'あ') }
+        assert_raise(ArgumentError.new('Seed and delimiter are duplicated.')) do
+          NCipher::encode('にゃんぱす', seed: 'あい', delimiter: 'あ')
+        end
       end
 
       test 'シード値内で値が重複' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'ああ') }
+        assert_raise(ArgumentError.new('Character is duplicated in seed.')) do
+          NCipher::encode('にゃんぱす', seed: 'ああ')
+        end
       end
     end
 
-    sub_test_case '文字数' do
-      test 'シード値が1文字' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'あ') }
-      end
-
-      test 'シード値が11文字' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: 'あいうえおかきくけこさ') }
-      end
-    end
-
-    sub_test_case '空文字' do
-      test '文字列が空文字' do
-        assert_raise(ArgumentError) { NCipher::encode('') }
-      end
-
-      test 'シード値が空文字' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', seed: '') }
-      end
-
-      test 'デリミタが空文字' do
-        assert_raise(ArgumentError) { NCipher::encode('にゃんぱす', delimiter: '') }
-      end
-    end
-
-    sub_test_case '型不正' do
+    sub_test_case 'TypeError' do
       data do
         object = [123, [:foo, :bar], {foo: 'hoge', bar: 'fuga'}, :foo, nil]
         object.map {|obj| [obj.class.to_s, obj] }.to_h
       end
 
-      test 'String以外のオブジェクトを引数に指定' do |obj|
+      test 'String以外のオブジェクト' do |obj|
         assert_raise(TypeError) { NCipher::encode(obj, seed: 'にゃんぱす', delimiter: '〜') }
         assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: obj, delimiter: '〜') }
         assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
