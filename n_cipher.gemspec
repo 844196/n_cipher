@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜ぱすぱんぱゃ}
   spec.description   = %q{文字列のUnicodeエスケープシーケンスを利用した簡易的な暗号です}
-  spec.homepage      = "https://github.com/844196"
+  spec.homepage      = "https://github.com/844196/n_cipher"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
