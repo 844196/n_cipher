@@ -3,7 +3,7 @@ require "n_cipher/version"
 module NCipher
   module Helper
     def convert_table(string, mode)
-      table = string.chars.map.with_index(0) {|c,i| [i.to_s, c] }.to_h
+      table = [*'0'..'9', *'a'..'z'].zip(string.chars).reject(&:one?).to_h
       case mode
       when :encode then table
       when :decode then table.invert
@@ -15,7 +15,7 @@ module NCipher
         raise TypeError, "#{obj} is #{obj.class} object. Argument must be string object." unless obj.kind_of?(String)
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
-      raise ArgumentError, 'Seed must be 2 to 10 characters.' unless seed.size.between?(2, 10)
+      raise ArgumentError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       # シード値が重複していないか？
       #   OK: 'あいう'

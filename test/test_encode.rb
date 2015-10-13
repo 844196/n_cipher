@@ -28,7 +28,7 @@ class EncodeTest < Test::Unit::TestCase
         string      = ['あいう', '', '']
         seed        = ['', 'えお', '']
         delimiter   = ['', '', 'か']
-        combination = string.product(seed, delimiter).uniq.reject {|e| e.none?(&''.method(:==)) }
+        combination = string.product(seed, delimiter).uniq.select {|e| e.any?(&:empty?) }
 
         combination.map do |(str, sed, deli)|
           [[str, sed, deli].inspect, [str, {seed: sed, delimiter: deli}]]
@@ -42,17 +42,17 @@ class EncodeTest < Test::Unit::TestCase
       end
 
       data do
-        [*1..3, *9..11].map {|i| ["#{i}文字", [*'0'..'9', *'a'..'z', *'A'..'Z'][0, i].join] }.to_h
+        [*1..3, *35..37].map {|i| ["#{i}文字", [*'0'..'9', *'a'..'z', *'A'..'Z'][0, i].join] }.to_h
       end
 
       test 'シード値文字数' do |seed|
         case seed.size
-        when 2..10
+        when 2..36
           assert_nothing_raised do
             NCipher.send(:encode, 'あいう', seed: seed)
           end
         else
-          assert_raise(ArgumentError.new('Seed must be 2 to 10 characters.')) do
+          assert_raise(ArgumentError.new('Seed must be 2 to 36 characters.')) do
             NCipher.send(:encode, 'あいう', seed: seed)
           end
         end
