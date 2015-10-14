@@ -2,6 +2,8 @@ require "n_cipher/version"
 
 # ユニコードエスケープシーケンスを用いた簡易的な暗号化及び復号化方式を提供するモジュール
 module NCipher
+  # {encode}及び{decode}での共通した処理をまとめたモジュール
+  # @note このモジュールはプライベートクラスメソッドに指定されている
   module Helper
     def convert_table(string, mode)
       table = [*'0'..'9', *'a'..'z'].zip(string.chars).reject(&:one?).to_h
