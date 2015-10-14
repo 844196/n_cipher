@@ -5,6 +5,19 @@ module NCipher
   # {encode}及び{decode}での共通した処理をまとめたモジュール
   # @note このモジュールはプライベートクラスメソッドに指定されている
   module Helper
+    # シード値から変換テーブルを構築する
+    #
+    # @example
+    #   convert_table('あいうえお', :encode)
+    #   #=> {"0"=>"あ", "1"=>"い", "2"=>"う", "3"=>"え", "4"=>"お"}
+    #
+    #   convert_table('あいうえお', :decode)
+    #   #=> {"あ"=>"0", "い"=>"1", "う"=>"2", "え"=>"3", "お"=>"4"}
+    #
+    # @param [String] string
+    # @param [Symbol] mode :encodeもしくは:decodeを指定
+    #
+    # @return [Hash] 変換テーブル
     def convert_table(string, mode)
       table = [*'0'..'9', *'a'..'z'].zip(string.chars).reject(&:one?).to_h
       case mode
