@@ -26,6 +26,25 @@ module NCipher
       end
     end
 
+    # 共通の引数チェックを行う
+    #
+    # このメソッドは{encode}及び{decode}での共通した以下の引数チェックをOAOO化するために定義されている
+    # - 引数は全てStringオブジェクトか？
+    # - 引数は空でないか？
+    # - シード値は2文字以上36文字以下か？
+    # - シード値と区切り文字で値が重複していないか？
+    # - シード値が重複していないか？
+    #   - OK: 'あいう'
+    #   - NG: 'ああい'（「あ」が重複）
+    #
+    # @param [String] string
+    # @param [String] seed
+    # @param [String] delimiter
+    #
+    # @return [nil] 例外を発生させるのが目的のため、返り値はない
+    #
+    # @raise [ArgumentError]
+    # @raise [TypeError]
     def common_argument_check(string, seed, delimiter)
       [string, seed, delimiter].each do |obj|
         raise TypeError, "#{obj} is #{obj.class} object. Argument must be string object." unless obj.kind_of?(String)
@@ -33,9 +52,6 @@ module NCipher
       end
       raise ArgumentError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
-      # シード値が重複していないか？
-      #   OK: 'あいう'
-      #   NG: 'ああい'（「あ」が重複）
       raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
     end
   end
