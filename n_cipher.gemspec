@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "test-unit"
   spec.add_development_dependency "coveralls"
   spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "yard"
 
   spec.add_dependency "thor"
 end
