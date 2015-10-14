@@ -43,7 +43,7 @@ module NCipher
     # @param [String] seed シード値
     # @param [String] delimiter 区切り文字
     #
-    # @return [String] 暗号化されたStringオブジェクト
+    # @return [String] 暗号化された文字列オブジェクト
     #
     # @raise [ArgumentError] 引数が不正な場合
     #   - 引数チェック項目については{Helper#common_argument_check}を参照
