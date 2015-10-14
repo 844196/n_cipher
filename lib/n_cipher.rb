@@ -57,6 +57,29 @@ module NCipher
       string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
 
+    # 文字列を復号化
+    #
+    # @note
+    #   {encode}と違い、シード値及び区切り文字は明示的に指定しなければいけない
+    #
+    # @example
+    #   NCipher.decode('ぱすん〜ぱすぱ〜ぱすす〜', seed: 'にゃんぱす', delimiter: '〜')
+    #   #=> "abc"
+    #
+    # @param [String] string 復号対象文字列
+    # @param [String] seed シード値
+    # @param [String] delimiter 区切り文字
+    #
+    # @return [String] 復号化された文字列オブジェクト
+    #
+    # @raise [ArgumentError] 引数が不正な場合
+    #   - 復号時は{Helper#common_argument_check}に加えて以下をチェックする
+    #     - 暗号文字列に区切り文字が含まれているか？
+    #     - シード値に不足はないか？
+    # @raise [TypeError] 文字列オブジェクト以外が渡された場合
+    #
+    # @see Helper#common_argument_check
+    # @see Helper#convert_table
     def decode(string, seed: , delimiter: )
       common_argument_check(string, seed, delimiter)
       raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
