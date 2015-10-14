@@ -1,5 +1,6 @@
 require "n_cipher/version"
 
+# ユニコードエスケープシーケンスを用いた簡易的な暗号化及び復号化方式を提供するモジュール
 module NCipher
   module Helper
     def convert_table(string, mode)
