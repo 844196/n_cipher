@@ -12,18 +12,18 @@ module NCipher
     # シード値から変換テーブルを構築する
     #
     # @example
-    #   convert_table('あいうえお', :encode)
+    #   convert_table(:encode, 'あいうえお')
     #   #=> {"0"=>"あ", "1"=>"い", "2"=>"う", "3"=>"え", "4"=>"お"}
     #
-    #   convert_table('あいうえお', :decode)
+    #   convert_table(:decode, 'あいうえお')
     #   #=> {"あ"=>"0", "い"=>"1", "う"=>"2", "え"=>"3", "お"=>"4"}
     #
-    # @param [String] string
     # @param [Symbol] mode :encodeもしくは:decodeを指定
+    # @param [String] string
     #
     # @return [Hash] 変換テーブル
-    def convert_table(string, mode)
-      table = [*'0'..'9', *'a'..'z'].zip(string.chars).reject(&:one?).to_h
+    def convert_table(mode, seed)
+      table = [*'0'..'9', *'a'..'z'].zip(seed.chars).reject(&:one?).to_h
       case mode
       when :encode then table
       when :decode then table.invert
@@ -91,7 +91,7 @@ module NCipher
     def encode(string, seed: @seed, delimiter: @delimiter)
       common_argument_check(string, seed, delimiter)
 
-      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
+      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(:encode, seed)).concat(delimiter) }.join
     end
 
     # 文字列を復号化
@@ -119,7 +119,7 @@ module NCipher
       raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
       raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
 
-      string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(seed, :decode)).to_i(seed.size)].pack('U') }.join
+      string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(:decode, seed)).to_i(seed.size)].pack('U') }.join
     end
   end
 
