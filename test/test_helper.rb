@@ -13,4 +13,4 @@ if ENV['CI']
   SimpleCov.start 'test_frameworks'
 end
 
-exit Test::Unit::AutoRunner.run(true, test_dir, ['--verbose', '--progress-row-max=0'])
+exit Test::Unit::AutoRunner.run(true, test_dir)

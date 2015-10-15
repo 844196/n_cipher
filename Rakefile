@@ -6,7 +6,7 @@ require 'yard/rake/yardoc_task'
 task :default => :test
 
 task :test do
-  ruby("test/test_helper.rb")
+  ruby 'test/test_helper.rb', '--verbose', '--progress-row-max=0'
 end
 
 RuboCop::RakeTask.new
