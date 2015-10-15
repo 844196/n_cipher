@@ -29,7 +29,7 @@ module NCipher
     # 共通の引数チェックを行う
     #
     # このメソッドは{encode}及び{decode}での共通した以下の引数チェックをOAOO化するために定義されている
-    # - 引数は全てStringオブジェクトか？
+    # - 引数は全てStringオブジェクトか？（厳密には、文字列として扱えるか？）
     # - 引数は空でないか？
     # - シード値は2文字以上36文字以下か？
     # - シード値と区切り文字で値が重複していないか？
@@ -37,7 +37,7 @@ module NCipher
     #   - OK: 'あいう'
     #   - NG: 'ああい'（「あ」が重複）
     #
-    # @param [String] string
+    # @param [#to_str] string
     # @param [String] seed
     # @param [String] delimiter
     #
@@ -47,7 +47,7 @@ module NCipher
     # @raise [TypeError]
     def common_argument_check(string, seed, delimiter)
       [string, seed, delimiter].each do |obj|
-        raise TypeError, "#{obj} is #{obj.class} object. Argument must be string object." unless obj.kind_of?(String)
+        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
       raise RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)

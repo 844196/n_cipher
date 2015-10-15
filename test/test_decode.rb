@@ -66,14 +66,27 @@ class DecodeTest < Test::Unit::TestCase
 
     sub_test_case 'TypeError' do
       data do
-        object = [123, [:foo, :bar], {foo: 'hoge', bar: 'fuga'}, :foo, nil]
+        object = ['abc', 123, [:foo, :bar], {foo: 'hoge', bar: 'fuga'}, :foo, nil]
         object.map {|obj| [obj.class.to_s, obj] }.to_h
       end
 
-      test 'String以外のオブジェクト' do |obj|
-        assert_raise(TypeError) { NCipher.decode(obj, seed: 'にゃんぱす', delimiter: '〜') }
-        assert_raise(TypeError) { NCipher.decode('にゃんぱす', seed: obj, delimiter: '〜') }
-        assert_raise(TypeError) { NCipher.decode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
+      test 'to_strメソッドの存否' do |obj|
+        case obj.respond_to? :to_str
+        when true
+          assert_nothing_raised { NCipher.encode(obj, seed: 'にゃんぱす', delimiter: '〜') }
+          assert_nothing_raised { NCipher.encode('にゃんぱす', seed: obj, delimiter: '〜') }
+          assert_nothing_raised { NCipher.encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
+        else
+          assert_raise(TypeError.new("Arguments must be respond to 'to_str' method.")) do
+            NCipher.encode(obj, seed: 'にゃんぱす', delimiter: '〜')
+          end
+          assert_raise(TypeError.new("Arguments must be respond to 'to_str' method.")) do
+            NCipher.encode('にゃんぱす', seed: obj, delimiter: '〜')
+          end
+          assert_raise(TypeError.new("Arguments must be respond to 'to_str' method.")) do
+            NCipher.encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj)
+          end
+        end
       end
     end
   end
