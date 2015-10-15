@@ -3,11 +3,19 @@ require 'n_cipher'
 class DecodeTest < Test::Unit::TestCase
   sub_test_case '正常系' do
     test '通常利用想定' do
-      assert_equal(
-        'にゃんぱす',
-        NCipher.decode('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん',
-                       seed: 'にゃんぱす', delimiter: '〜')
-      )
+      assert_equal('にゃんぱす',
+                   NCipher.decode('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん'))
+    end
+
+    sub_test_case '引数' do
+      data(
+        'シード値のみ指定' => {seed: 'にゃんぱす'},
+        'デリミタのみ指定' => {delimiter: '〜'},
+        'すべて指定'       => {seed: 'にゃんぱす', delimiter: '〜'})
+
+      test 'オプション指定' do |options|
+        assert_equal('abc', NCipher.send(:decode, 'ぱすん〜ぱすぱ〜ぱすす〜', options))
+      end
     end
   end
 

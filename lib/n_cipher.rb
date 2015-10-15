@@ -2,6 +2,10 @@ require "n_cipher/version"
 
 # ユニコードエスケープシーケンスを用いた簡易的な暗号化及び復号化方式を提供するモジュール
 module NCipher
+  # デフォルト値
+  @seed = 'にゃんぱす'
+  @delimiter = '〜'
+
   # {encode}及び{decode}での共通した処理をまとめたモジュール
   # @note このモジュールはプライベートクラスメソッドに指定されている
   module Helper
@@ -57,6 +61,7 @@ module NCipher
   end
 
   class << self
+    attr_accessor :seed, :delimiter
     include NCipher::Helper
 
     # 文字列を暗号化
@@ -83,16 +88,13 @@ module NCipher
     #
     # @see Helper#common_argument_check
     # @see Helper#convert_table
-    def encode(string, seed: 'にゃんぱす', delimiter: '〜')
+    def encode(string, seed: @seed, delimiter: @delimiter)
       common_argument_check(string, seed, delimiter)
 
       string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(seed, :encode)).concat(delimiter) }.join
     end
 
     # 文字列を復号化
-    #
-    # @note
-    #   {encode}と違い、シード値及び区切り文字は明示的に指定しなければいけない
     #
     # @example
     #   NCipher.decode('ぱすん〜ぱすぱ〜ぱすす〜', seed: 'にゃんぱす', delimiter: '〜')
@@ -112,7 +114,7 @@ module NCipher
     #
     # @see Helper#common_argument_check
     # @see Helper#convert_table
-    def decode(string, seed: , delimiter: )
+    def decode(string, seed: @seed, delimiter: @delimiter)
       common_argument_check(string, seed, delimiter)
       raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
       raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
