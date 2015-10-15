@@ -4,7 +4,7 @@ class EncodeTest < Test::Unit::TestCase
   sub_test_case '正常系' do
     test '文字列のみ' do
       assert_equal('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
-                   NCipher::encode('にゃんぱす'))
+                   NCipher.encode('にゃんぱす'))
     end
 
     sub_test_case '引数' do
@@ -60,13 +60,13 @@ class EncodeTest < Test::Unit::TestCase
 
       test 'シード値とデリミタで値が重複' do
         assert_raise(ArgumentError.new('Seed and delimiter are duplicated.')) do
-          NCipher::encode('にゃんぱす', seed: 'あい', delimiter: 'あ')
+          NCipher.encode('にゃんぱす', seed: 'あい', delimiter: 'あ')
         end
       end
 
       test 'シード値内で値が重複' do
         assert_raise(ArgumentError.new('Character is duplicated in seed.')) do
-          NCipher::encode('にゃんぱす', seed: 'ああ')
+          NCipher.encode('にゃんぱす', seed: 'ああ')
         end
       end
     end
@@ -78,9 +78,9 @@ class EncodeTest < Test::Unit::TestCase
       end
 
       test 'String以外のオブジェクト' do |obj|
-        assert_raise(TypeError) { NCipher::encode(obj, seed: 'にゃんぱす', delimiter: '〜') }
-        assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: obj, delimiter: '〜') }
-        assert_raise(TypeError) { NCipher::encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
+        assert_raise(TypeError) { NCipher.encode(obj, seed: 'にゃんぱす', delimiter: '〜') }
+        assert_raise(TypeError) { NCipher.encode('にゃんぱす', seed: obj, delimiter: '〜') }
+        assert_raise(TypeError) { NCipher.encode('にゃんぱす', seed: 'にゃんぱす', delimiter: obj) }
       end
     end
   end
