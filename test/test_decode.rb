@@ -21,23 +21,6 @@ class DecodeTest < Test::Unit::TestCase
 
   sub_test_case '異常系' do
     sub_test_case 'ArgumentError' do
-      data do
-        string      = ['あいう', '', '']
-        seed        = ['', 'えお', '']
-        delimiter   = ['', '', 'か']
-        combination = string.product(seed, delimiter).uniq.select {|e| e.any?(&:empty?) }
-
-        combination.map do |(str, sed, deli)|
-          [[str, sed, deli].inspect, [str, {seed: sed, delimiter: deli}]]
-        end
-      end
-
-      test '空文字' do |(string, options)|
-        assert_raise(ArgumentError.new('Invalid argument.')) do
-          NCipher.send(:decode, string, options)
-        end
-      end
-
       test 'シード値とデリミタで値が重複' do
         assert_raise(ArgumentError.new('Seed and delimiter are duplicated.')) do
           NCipher.decode('にゃんぱす', seed: 'あい', delimiter: 'あ')

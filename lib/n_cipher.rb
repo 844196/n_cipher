@@ -56,7 +56,6 @@ module NCipher
     def common_argument_check(string, seed, delimiter)
       [string, seed, delimiter].each do |obj|
         raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
-        raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size

@@ -25,23 +25,6 @@ class EncodeTest < Test::Unit::TestCase
   sub_test_case '異常系' do
     sub_test_case 'ArgumentError' do
       data do
-        string      = ['あいう', '', '']
-        seed        = ['', 'えお', '']
-        delimiter   = ['', '', 'か']
-        combination = string.product(seed, delimiter).uniq.select {|e| e.any?(&:empty?) }
-
-        combination.map do |(str, sed, deli)|
-          [[str, sed, deli].inspect, [str, {seed: sed, delimiter: deli}]]
-        end
-      end
-
-      test '空文字' do |(string, options)|
-        assert_raise(ArgumentError.new('Invalid argument.')) do
-          NCipher.send(:encode, string, options)
-        end
-      end
-
-      data do
         [*1..3, *35..37].map {|i| ["#{i}文字", [*'0'..'9', *'a'..'z', *'A'..'Z'][0, i].join] }.to_h
       end
 
