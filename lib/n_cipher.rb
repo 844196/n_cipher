@@ -50,7 +50,7 @@ module NCipher
         raise TypeError, "#{obj} is #{obj.class} object. Argument must be string object." unless obj.kind_of?(String)
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
-      raise ArgumentError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
+      raise RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
     end

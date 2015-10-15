@@ -52,7 +52,7 @@ class EncodeTest < Test::Unit::TestCase
             NCipher.send(:encode, 'あいう', seed: seed)
           end
         else
-          assert_raise(ArgumentError.new('Seed must be 2 to 36 characters.')) do
+          assert_raise(RangeError.new('Seed must be 2 to 36 characters.')) do
             NCipher.send(:encode, 'あいう', seed: seed)
           end
         end
