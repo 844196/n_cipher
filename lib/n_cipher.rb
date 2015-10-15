@@ -22,7 +22,11 @@ module NCipher
     # @param [String] string
     #
     # @return [Hash] 変換テーブル
+    #
+    # @raise [RangeError] シード値が2文字以下、もしくは36文字以上の場合
     def convert_table(mode, seed)
+      raise RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
+
       table = [*'0'..'9', *'a'..'z'].zip(seed.chars).reject(&:one?).to_h
       case mode
       when :encode then table
@@ -54,7 +58,6 @@ module NCipher
         raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
         raise ArgumentError, 'Invalid argument.' if obj.empty?
       end
-      raise RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
     end
@@ -91,7 +94,8 @@ module NCipher
     def encode(string, seed: @seed, delimiter: @delimiter)
       common_argument_check(string, seed, delimiter)
 
-      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, convert_table(:encode, seed)).concat(delimiter) }.join
+      table = convert_table(:encode, seed)
+      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, table).concat(delimiter) }.join
     end
 
     # 文字列を復号化
@@ -119,7 +123,8 @@ module NCipher
       raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
       raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
 
-      string.split(delimiter).map {|ele| [ele.gsub(/./, convert_table(:decode, seed)).to_i(seed.size)].pack('U') }.join
+      table = convert_table(:decode, seed)
+      string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }.join
     end
   end
 
