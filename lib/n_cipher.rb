@@ -6,6 +6,24 @@ module NCipher
   @seed = 'にゃんぱす'
   @delimiter = '〜'
 
+  # シード値、区切り文字を設定するためのモジュール
+  module Configuration
+    # @!attribute seed
+    #   シード値
+    # @!attribute delimiter
+    #   区切り文字
+    attr_accessor :seed, :delimiter
+
+    # @example
+    #   NCipher.configure do |config|
+    #     config.seed = 'abc'
+    #     config.delimiter = ','
+    #   end
+    def configure
+      yield self
+    end
+  end
+
   # 実際の暗号化、復号化を行うメソッドが定義されているモジュール
   # @note このモジュール内のメソッドはプライベートクラスメソッドに指定されているため、外部から呼び出すことはできない
   module Convert
@@ -63,7 +81,7 @@ module NCipher
   end
 
   class << self
-    attr_accessor :seed, :delimiter
+    include NCipher::Configuration
     include NCipher::Convert
 
     # 文字列を暗号化
