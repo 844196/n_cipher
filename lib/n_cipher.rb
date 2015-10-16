@@ -6,9 +6,9 @@ module NCipher
   @seed = 'にゃんぱす'
   @delimiter = '〜'
 
-  # {encode}及び{decode}での共通した処理をまとめたモジュール
-  # @note このモジュールはプライベートクラスメソッドに指定されている
-  module Helper
+  # 実際の暗号化、復号化を行うメソッドが定義されているモジュール
+  # @note このモジュール内のメソッドはプライベートクラスメソッドに指定されているため、外部から呼び出すことはできない
+  module Convert
     # シード値から変換テーブルを構築する
     #
     # @example
@@ -18,8 +18,8 @@ module NCipher
     #   convert_table(:decode, 'あいうえお')
     #   #=> {"あ"=>"0", "い"=>"1", "う"=>"2", "え"=>"3", "お"=>"4"}
     #
-    # @param [Symbol] mode :encodeもしくは:decodeを指定
-    # @param [String] string
+    # @param [Symbol] mode +:encode+もしくは+:decode+を指定
+    # @param [String] seed 元となるシード値
     #
     # @return [Hash] 変換テーブル
     #
@@ -34,98 +34,89 @@ module NCipher
       end
     end
 
-    # 共通の引数チェックを行う
+    # 実際の変換処理を行う
     #
-    # このメソッドは{encode}及び{decode}での共通した以下の引数チェックをOAOO化するために定義されている
-    # - 引数は全てStringオブジェクトか？（厳密には、文字列として扱えるか？）
-    # - 引数は空でないか？
-    # - シード値は2文字以上36文字以下か？
-    # - シード値と区切り文字で値が重複していないか？
-    # - シード値が重複していないか？
-    #   - OK: 'あいう'
-    #   - NG: 'ああい'（「あ」が重複）
+    # @param [Symbol] mode +:encode+もしくは+:decode+を指定
+    # @param [String] string 対象文字列
+    # @param [String] seed シード値
+    # @param [String] delimiter 区切り文字
     #
-    # @param [#to_str] string
-    # @param [String] seed
-    # @param [String] delimiter
-    #
-    # @return [nil] 例外を発生させるのが目的のため、返り値はない
+    # @return [String] 変換された文字列オブジェクト
     #
     # @raise [ArgumentError]
-    # @raise [TypeError]
-    def common_argument_check(string, seed, delimiter)
-      [string, seed, delimiter].each do |obj|
-        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
-      end
+    def convert(mode, string, seed, delimiter)
       raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
       raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
+
+      table = convert_table(mode.to_sym, seed)
+      rtn = case mode
+        when :encode
+          string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
+        when :decode
+          raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
+          raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
+          string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
+        end
+
+      rtn.join
     end
   end
 
   class << self
     attr_accessor :seed, :delimiter
-    include NCipher::Helper
+    include NCipher::Convert
 
     # 文字列を暗号化
     #
+    # @note このメソッドは{Convert#convert}のラッパーメソッドである
+    #
     # @example
-    #   NCipher.encode('abc') # 文字列のみ
+    #   NCipher.encode('abc', seed: 'にゃんぱす', delimiter: '〜')
     #   #=> "ぱすん〜ぱすぱ〜ぱすす〜"
     #
-    #   NCipher.encode('abc', seed: 'うどん') # シード値を指定
-    #   #=> "どうどんど〜どうどんん〜どうんうう〜"
-    #
-    #   NCipher.encode('abc', seed: 'うどん', delimiter: 'ひげ') # シード値、区切り文字を指定
-    #   #=> "どうどんどひげどうどんんひげどうんううひげ"
-    #
-    # @param [String] string 暗号対象文字列
-    # @param [String] seed シード値
-    # @param [String] delimiter 区切り文字
+    # @param [#to_str] string 対象文字列
+    # @param [#to_str] seed シード値
+    # @param [#to_str] delimiter 区切り文字
     #
     # @return [String] 暗号化された文字列オブジェクト
     #
-    # @raise [ArgumentError] 引数が不正な場合
-    #   - 引数チェック項目については{Helper#common_argument_check}を参照
-    # @raise [TypeError] 文字列オブジェクト以外が渡された場合
+    # @raise [ArgumentError]
+    # @raise [TypeError]
+    # @raise [RangeError]
     #
-    # @see Helper#common_argument_check
-    # @see Helper#convert_table
-    def encode(string, seed: @seed, delimiter: @delimiter)
-      common_argument_check(string, seed, delimiter)
-
-      table = convert_table(:encode, seed)
-      string.unpack('U*').map {|c| c.to_s(seed.size).gsub(/./, table).concat(delimiter) }.join
-    end
+    # @see Convert#convert
+    def encode(string, seed: @seed, delimiter: @delimiter); end
 
     # 文字列を復号化
+    #
+    # @note このメソッドは{Convert#convert}のラッパーメソッドである
     #
     # @example
     #   NCipher.decode('ぱすん〜ぱすぱ〜ぱすす〜', seed: 'にゃんぱす', delimiter: '〜')
     #   #=> "abc"
     #
-    # @param [String] string 復号対象文字列
-    # @param [String] seed シード値
-    # @param [String] delimiter 区切り文字
+    # @param [#to_str] string 対象文字列
+    # @param [#to_str] seed シード値
+    # @param [#to_str] delimiter 区切り文字
     #
     # @return [String] 復号化された文字列オブジェクト
     #
-    # @raise [ArgumentError] 引数が不正な場合
-    #   - 復号時は{Helper#common_argument_check}に加えて以下をチェックする
-    #     - 暗号文字列に区切り文字が含まれているか？
-    #     - シード値に不足はないか？
-    # @raise [TypeError] 文字列オブジェクト以外が渡された場合
+    # @raise [ArgumentError]
+    # @raise [TypeError]
+    # @raise [RangeError]
     #
-    # @see Helper#common_argument_check
-    # @see Helper#convert_table
-    def decode(string, seed: @seed, delimiter: @delimiter)
-      common_argument_check(string, seed, delimiter)
-      raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
-      raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
+    # @see Convert#convert
+    def decode(string, seed: @seed, delimiter: @delimiter); end
 
-      table = convert_table(:decode, seed)
-      string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }.join
+    %i(encode decode).each do |mode|
+      define_method(mode) do |string, seed: @seed, delimiter: @delimiter|
+        [string, seed, delimiter].each do |obj|
+          raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
+        end
+        convert(mode, string.to_str, seed.to_str, delimiter.to_str)
+      end
     end
   end
 
-  private_class_method :convert_table, :common_argument_check
+  private_class_method :convert_table, :convert
 end
