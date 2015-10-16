@@ -85,7 +85,12 @@ module NCipher
     # @raise [RangeError]
     #
     # @see Convert#convert
-    def encode(string, seed: @seed, delimiter: @delimiter); end
+    def encode(string, seed: @seed, delimiter: @delimiter)
+      [string, seed, delimiter].each do |obj|
+        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
+      end
+      convert(:encode, string.to_str, seed.to_str, delimiter.to_str)
+    end
 
     # 文字列を復号化
     #
@@ -106,15 +111,11 @@ module NCipher
     # @raise [RangeError]
     #
     # @see Convert#convert
-    def decode(string, seed: @seed, delimiter: @delimiter); end
-
-    %i(encode decode).each do |mode|
-      define_method(mode) do |string, seed: @seed, delimiter: @delimiter|
-        [string, seed, delimiter].each do |obj|
-          raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
-        end
-        convert(mode, string.to_str, seed.to_str, delimiter.to_str)
+    def decode(string, seed: @seed, delimiter: @delimiter)
+      [string, seed, delimiter].each do |obj|
+        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
       end
+      convert(:decode, string.to_str, seed.to_str, delimiter.to_str)
     end
   end
 
