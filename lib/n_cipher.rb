@@ -25,7 +25,7 @@ module NCipher
     #
     # @raise [RangeError] シード値が2文字以下、もしくは36文字以上の場合
     def convert_table(mode, seed)
-      raise RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
+      fail RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
 
       table = [*'0'..'9', *'a'..'z'].zip(seed.chars).reject(&:one?).to_h
       case mode
@@ -45,16 +45,16 @@ module NCipher
     #
     # @raise [ArgumentError]
     def convert(mode, string, seed, delimiter)
-      raise ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
-      raise ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
+      fail ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
+      fail ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
 
       table = convert_table(mode.to_sym, seed)
       rtn = case mode
         when :encode
           string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
         when :decode
-          raise ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
-          raise ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
+          fail ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
+          fail ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
           string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
         end
 
@@ -87,7 +87,7 @@ module NCipher
     # @see Convert#convert
     def encode(string, seed: @seed, delimiter: @delimiter)
       [string, seed, delimiter].each do |obj|
-        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
+        fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
       end
       convert(:encode, string.to_str, seed.to_str, delimiter.to_str)
     end
@@ -113,7 +113,7 @@ module NCipher
     # @see Convert#convert
     def decode(string, seed: @seed, delimiter: @delimiter)
       [string, seed, delimiter].each do |obj|
-        raise TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
+        fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
       end
       convert(:decode, string.to_str, seed.to_str, delimiter.to_str)
     end
