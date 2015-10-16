@@ -1,6 +1,13 @@
 require 'n_cipher'
 
 class EncodeTest < Test::Unit::TestCase
+  def setup
+    NCipher.configure do |config|
+      config.seed = 'にゃんぱす'
+      config.delimiter = '〜'
+    end
+  end
+
   sub_test_case '正常系' do
     test '文字列のみ' do
       assert_equal('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜',
