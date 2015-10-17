@@ -87,11 +87,11 @@ module NCipher
 
       table = convert_table(mode.to_sym, seed)
       rtn = case mode
-        when :encode
-          string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
-        when :decode
-          string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
-        end
+            when :encode
+              string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
+            when :decode
+              string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
+            end
 
       rtn.join
     end
