@@ -52,6 +52,28 @@ module NCipher
       end
     end
 
+    # 引数チェック
+    #
+    # @param [Symbol] mode +:encode+もしくは+:decode+を指定
+    # @param [String] string 対象文字列
+    # @param [String] seed シード値
+    # @param [String] delimiter 区切り文字
+    #
+    # @return [true] チェックをパスした場合
+    #
+    # @raise [ArgumentError]
+    def validate_arguments(mode, string, seed, delimiter)
+      fail ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
+      fail ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
+
+      if mode == :decode
+        fail ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
+        fail ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
+      end
+
+      true
+    end
+
     # 実際の変換処理を行う
     #
     # @param [Symbol] mode +:encode+もしくは+:decode+を指定
@@ -60,19 +82,14 @@ module NCipher
     # @param [String] delimiter 区切り文字
     #
     # @return [String] 変換された文字列オブジェクト
-    #
-    # @raise [ArgumentError]
     def convert(mode, string, seed, delimiter)
-      fail ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
-      fail ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
+      validate_arguments(mode, string, seed, delimiter)
 
       table = convert_table(mode.to_sym, seed)
       rtn = case mode
         when :encode
           string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
         when :decode
-          fail ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
-          fail ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
           string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
         end
 
@@ -98,9 +115,7 @@ module NCipher
     #
     # @return [String] 暗号化された文字列オブジェクト
     #
-    # @raise [ArgumentError]
     # @raise [TypeError]
-    # @raise [RangeError]
     #
     # @see Convert#convert
     def encode(string, seed: @seed, delimiter: @delimiter)
@@ -124,9 +139,7 @@ module NCipher
     #
     # @return [String] 復号化された文字列オブジェクト
     #
-    # @raise [ArgumentError]
     # @raise [TypeError]
-    # @raise [RangeError]
     #
     # @see Convert#convert
     def decode(string, seed: @seed, delimiter: @delimiter)
