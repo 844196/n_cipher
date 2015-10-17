@@ -39,41 +39,51 @@ $ gem install n_cipher
 ```ruby
 require 'n_cipher'
 
-NCipher::encode('にゃんぱす', seed: 'おうどん', delimiter: 'ひげ')
+NCipher.encode('にゃんぱす', seed: 'おうどん', delimiter: 'ひげ')
 #=> "んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ"
 
-NCipher::decode(
+NCipher.decode(
   'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ',
   seed: 'おうどん', delimiter: 'ひげ')
 #=> "にゃんぱす"
 ```
 
+```ruby
+# いちいちオプション指定するのが面倒なとき用
+NCipher.configure do |config|
+  config.seed = 'おうどん'
+  config.delimiter = 'ひげ'
+end
+
+NCipher.encode 'にゃんぱす'
+#=> "んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ"
+
+NCipher.decode 'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ'
+#=> "にゃんぱす"
+```
+
 ### Command
 
+シード値と区切り文字は以下の環境変数でも設定できます
+
+- `NCIPHER_SEED` : シード値
+- `NCIPHER_DELIMITER` : 区切り文字
+
 ```shellsession
-$ n_cipher --help
-Commands:
-  n_cipher decode <STRING>  # N暗号文字列を復号化
-  n_cipher encode <STRING>  # 文字列をN暗号化
-  n_cipher help [COMMAND]   # Describe available commands or one specific command
-  n_cipher version          # Print version
-
-Options:
-  [--seed=SEED]
-                           # Default: にゃんぱす
-  [--delimiter=DELIMITER]
-                           # Default: 〜
-
 $ # encode
 $ n_cipher encode 'にゃんぱす'
 ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜
 $ n_cipher encode --seed 'おうどん' --delimiter 'ひげ' 'にゃんぱす'
 んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ
+```
 
+```
 $ # decode
 $ n_cipher decode --seed 'おうどん' --delimiter 'ひげ' 'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ'
 にゃんぱす
+```
 
+```
 $ # support STDIN
 $ renge | n_cipher encode
 んんぱんにぱに〜ゃぱんぱゃゃん〜ぱすすにぱゃ〜ぱすすゃにぱ〜ぱすすゃすゃ〜すににゃぱに〜ゃんゃんぱゃぱ〜ゃぱゃんんぱぱ〜ぱすすににに〜ぱすすにゃぱ〜ぱすすんんに〜ぱすすにぱす〜すにすんんんゃ〜
