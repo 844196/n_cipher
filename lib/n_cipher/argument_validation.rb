@@ -1,24 +1,28 @@
 module NCipher::ArgumentValidation
+  @@validations = {}
+
   def self.included(klass)
-    klass.class_eval { @__args_validations__ ||= Hash.new {|h,k| h[k] = [] } }
-    klass.extend(InheritValidation)
     klass.extend(ClassMethod)
+    klass.extend(InheritValidation)
+    Method.send(:include, MonkeyPatchToMethodClass)
+  end
+
+  module MonkeyPatchToMethodClass
+    def validation
+      ::NCipher::ArgumentValidation.validations[owner]["__#{name}__"]
+    end
   end
 
   module InheritValidation
     def inherited(klass)
       super
       # 継承先へバリデーションをディープコピー
-      baseclass_validations = @__args_validations__.map {|k,v| [k, v.clone] }.to_h
-      klass.class_eval { @__args_validations__ = baseclass_validations }
+      baseclass_validations = ::NCipher::ArgumentValidation.validations[self]
+      ::NCipher::ArgumentValidation.validations[klass] = baseclass_validations.map {|k, v| [k, v.map(&:clone)] }.to_h
     end
   end
 
   module ClassMethod
-    def __args_validations__
-      @__args_validations__
-    end
-
     private
 
     def args_validation(method, message=nil, &validation)
@@ -27,23 +31,53 @@ module NCipher::ArgumentValidation
         ex.set_backtrace(validation.source_location.push("in `args_validation'").join(':'))
       end
 
-      @__args_validations__[method.to_sym] << {
+      ::NCipher::ArgumentValidation.store_validation(self, "__#{method}__", validation, exception)
+
+      unless private_method_defined?("__#{method}__")
+        ::NCipher::ArgumentValidation.around_alias(self, "__#{method}__", method)
+        ::NCipher::ArgumentValidation.define_proxy_method(self, method)
+      end
+
+      self
+    end
+  end
+
+  class << self
+    def store_validation(owner, method_name, validation, exception)
+      @@validations[owner] ||= {}
+      @@validations[owner][method_name] ||= []
+      @@validations[owner][method_name] << {
         :validation => validation,
         :exception  => exception
       }
+    end
 
-      return if private_method_defined?("__#{method}__")
+    def define_proxy_method(owner, name)
+      owner.class_eval do
+        define_method(name) do |*args, &block|
+          validations = ::NCipher::ArgumentValidation.validations.tap do |hash|
+            break hash.has_key?(self.class) ? hash[self.class] : hash[self.singleton_class]
+          end
 
-      # オリジナルメソッドの可視性をprivateにして退避
-      private(method); alias_method("__#{method}__", method)
+          validations["__#{name}__"].each do |pattern|
+            # ブロックをインスタンスのコンテキストで評価
+            raise(pattern[:exception]) unless self.instance_exec(*args, block, &pattern[:validation])
+          end
 
-      define_method(method) do |*args, &block|
-        self.class.instance_variable_get("@__args_validations__")[method].each do |pattern|
-          # ブロックをインスタンスのコンテキストで評価
-          raise(pattern[:exception]) unless self.instance_exec(*args, block, &pattern[:validation])
+          __send__("__#{name}__", *args, &block)
         end
-        __send__("__#{method}__", *args, &block)
       end
+    end
+
+    def around_alias(owner, new_name, old_name)
+      owner.class_eval do
+        private(old_name)
+        alias_method new_name, old_name
+      end
+    end
+
+    def validations
+      @@validations
     end
   end
 end

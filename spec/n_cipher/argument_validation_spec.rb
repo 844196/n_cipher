@@ -5,7 +5,6 @@ describe NCipher::ArgumentValidation do
       def test_method(arg); arg; end
       args_validation(:test_method, 'Not string!') {|arg| arg.kind_of? String }
       args_validation(:test_method, 'Too short!') {|arg| arg.length >= 3 }
-      self
     end
   end
 
@@ -36,8 +35,7 @@ describe NCipher::ArgumentValidation do
     end
 
     it 'バリデーション一覧が確認できること' do
-      expect(@klass).to respond_to :__args_validations__
-      expect(@klass.__args_validations__).to include(:test_method)
+      expect(@klass.new.method(:test_method).validation.size).to eq(2)
     end
 
     it 'バリデーションチェックが機能すること' do
@@ -93,11 +91,9 @@ describe NCipher::ArgumentValidation do
     it 'バリデーションは子クラス間で共有されないこと' do
       inherited_klass_a = Class.new(@klass).class_eval do
         args_validation(:test_method, 'Too long!') {|arg| arg.length <= 4 }
-        self
       end
       inherited_klass_b = Class.new(@klass).class_eval do
         args_validation(:test_method, 'Too long!') {|arg| arg.length <= 5 }
-        self
       end
 
       # base class
@@ -120,6 +116,23 @@ describe NCipher::ArgumentValidation do
       expect { inherited_klass_b.new.test_method('1234') }.not_to raise_error
       expect { inherited_klass_b.new.test_method('12345') }.not_to raise_error
       expect { inherited_klass_b.new.test_method('123456') }.to raise_error(ArgumentError, 'Too long!')
+    end
+  end
+
+  context 'モジュールの特異クラスにインクルードされた場合' do
+    it '正しく機能すること' do
+      test_module = Module.new
+      class << test_module
+        include NCipher::ArgumentValidation
+        def test_method(arg); arg; end
+        args_validation(:test_method, 'Not string!') {|arg| arg.kind_of? String }
+        args_validation(:test_method, 'Too short!') {|arg| arg.length >= 3 }
+      end
+
+      expect(test_module).not_to respond_to(:args_validation)
+      expect(test_module.method(:test_method).validation.size).to eq(2)
+      expect { test_module.test_method(1234) }.to raise_error(ArgumentError, 'Not string!')
+      expect { test_module.test_method('12') }.to raise_error(ArgumentError, 'Too short!')
     end
   end
 end
