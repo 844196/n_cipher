@@ -5,7 +5,7 @@ describe 'NCipher.encode' do
   context '文字列オブジェクトを渡された場合' do
     it '暗号化できること' do
       expect(NCipher.encode('にゃんぱす'))
-        .to eq('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜')
+        .to eq('ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん')
     end
   end
 
@@ -22,7 +22,7 @@ describe 'NCipher.encode' do
       object = DoNotHave_to_str_Object.new
 
       expect { NCipher.encode(object) }
-        .to raise_error(TypeError, "Arguments must be respond to 'to_str' method.")
+        .to raise_error(ArgumentError, "Arguments must be respond to 'to_str' method.")
     end
   end
 end

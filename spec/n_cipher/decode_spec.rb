@@ -1,6 +1,6 @@
 describe 'NCipher.decode' do
   before { NCipher.config.reset }
-  after { NCipher.config.reset }
+  after  { NCipher.config.reset }
 
   context '文字列オブジェクトが渡された場合' do
     context '正しい暗号文字列が渡された場合' do
@@ -49,7 +49,7 @@ describe 'NCipher.decode' do
       object = DoNotHave_to_str_Object.new
 
       expect { NCipher.decode(object) }
-        .to raise_error(TypeError, "Arguments must be respond to 'to_str' method.")
+        .to raise_error(ArgumentError, "Arguments must be respond to 'to_str' method.")
     end
   end
 end

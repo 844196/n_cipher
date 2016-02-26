@@ -3,62 +3,51 @@ require 'n_cipher/version'
 require 'n_cipher/argument_validation'
 require 'n_cipher/configuration'
 
-module NCipher
-  module Convert
-    def convert_table(mode, seed)
-      fail RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
+class << NCipher
+  include NCipher::ArgumentValidation
 
-      table = [*'0'..'9', *'a'..'z'].zip(seed.chars).reject(&:one?).to_h
-      case mode
-      when :encode then table
-      when :decode then table.invert
-      end
-    end
-
-    def validate_arguments(mode, string, seed, delimiter)
-      fail ArgumentError, 'Seed and delimiter are duplicated.' unless (seed.chars & delimiter.chars).size.zero?
-      fail ArgumentError, 'Character is duplicated in seed.' unless seed.size == seed.chars.uniq.size
-
-      if mode == :decode
-        fail ArgumentError, 'Delimiter is not include in the cipher string.' unless string.match(delimiter)
-        fail ArgumentError, 'Invalid cipher string.' unless (string.chars - "#{seed}#{delimiter}".chars).size.zero?
-      end
-
-      true
-    end
-
-    def convert(mode, string, seed, delimiter)
-      validate_arguments(mode, string, seed, delimiter)
-
-      table = convert_table(mode.to_sym, seed)
-      rtn = case mode
-            when :encode
-              string.unpack('U*').map {|ele| ele.to_s(seed.size).gsub(/./, table).concat(delimiter) }
-            when :decode
-              string.split(delimiter).map {|ele| [ele.gsub(/./, table).to_i(seed.size)].pack('U') }
-            end
-
-      rtn.join
-    end
+  def encode(string)
+    string
+      .to_str
+      .unpack('U*')
+      .map {|char| char.to_s(NCipher.config.seed.length) }
+      .map {|char| char.gsub(/./, convert_table(:for => :encode)) }
+      .join(NCipher.config.delimiter)
   end
 
-  class << self
-    include NCipher::Convert
-
-    def encode(string, seed: NCipher.config.seed, delimiter: NCipher.config.delimiter)
-      [string, seed, delimiter].each do |obj|
-        fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
-      end
-      convert(:encode, string.to_str, seed.to_str, delimiter.to_str)
-    end
-
-    def decode(string, seed: NCipher.config.seed, delimiter: NCipher.config.delimiter)
-      [string, seed, delimiter].each do |obj|
-        fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
-      end
-      convert(:decode, string.to_str, seed.to_str, delimiter.to_str)
-    end
+  def decode(string)
+    string
+      .to_str
+      .split(NCipher.config.delimiter)
+      .map {|char| char.gsub(/./, convert_table(:for => :decode)) }
+      .map {|char| char.to_i(NCipher.config.seed.length) }
+      .map {|char| [char].pack('U') }
+      .join
   end
 
-  private_class_method :convert_table, :convert
+  args_validation :encode, "Arguments must be respond to 'to_str' method." do |string|
+    string.respond_to? :to_str
+  end
+
+  args_validation :decode, "Arguments must be respond to 'to_str' method." do |string|
+    string.respond_to? :to_str
+  end
+
+  args_validation :decode, 'Delimiter is not include in the cipher string.' do |string|
+    string.to_str.match(NCipher.config.delimiter)
+  end
+
+  args_validation :decode, 'Invalid cipher string.' do |string|
+    (string.to_str.chars - "#{NCipher.config.seed.join}#{NCipher.config.delimiter}".chars).size.zero?
+  end
+
+  private
+
+  def convert_table(param={:for => nil})
+    table = [*'0'..'9', *'a'..'z'].zip(NCipher.config.seed).reject(&:one?).to_h
+    case param[:for]
+    when :encode then table
+    when :decode then table.invert
+    end
+  end
 end
