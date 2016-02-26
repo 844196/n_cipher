@@ -1,17 +1,9 @@
+module NCipher; end
 require 'n_cipher/version'
+require 'n_cipher/argument_validation'
+require 'n_cipher/configuration'
 
 module NCipher
-  @seed = 'にゃんぱす'
-  @delimiter = '〜'
-
-  module Configuration
-    attr_accessor :seed, :delimiter
-
-    def configure
-      yield self
-    end
-  end
-
   module Convert
     def convert_table(mode, seed)
       fail RangeError, 'Seed must be 2 to 36 characters.' unless seed.size.between?(2, 36)
@@ -51,17 +43,16 @@ module NCipher
   end
 
   class << self
-    include NCipher::Configuration
     include NCipher::Convert
 
-    def encode(string, seed: @seed, delimiter: @delimiter)
+    def encode(string, seed: NCipher.config.seed, delimiter: NCipher.config.delimiter)
       [string, seed, delimiter].each do |obj|
         fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
       end
       convert(:encode, string.to_str, seed.to_str, delimiter.to_str)
     end
 
-    def decode(string, seed: @seed, delimiter: @delimiter)
+    def decode(string, seed: NCipher.config.seed, delimiter: NCipher.config.delimiter)
       [string, seed, delimiter].each do |obj|
         fail TypeError, "Arguments must be respond to 'to_str' method." unless obj.respond_to? :to_str
       end

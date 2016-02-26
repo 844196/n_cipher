@@ -1,4 +1,7 @@
 describe 'NCipher.encode' do
+  before { NCipher.config.reset }
+  after  { NCipher.config.reset }
+
   context '文字列オブジェクトを渡された場合' do
     it '暗号化できること' do
       expect(NCipher.encode('にゃんぱす'))

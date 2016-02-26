@@ -1,4 +1,7 @@
 describe 'NCipher.decode' do
+  before { NCipher.config.reset }
+  after { NCipher.config.reset }
+
   context '文字列オブジェクトが渡された場合' do
     context '正しい暗号文字列が渡された場合' do
       it '復号化できること' do
