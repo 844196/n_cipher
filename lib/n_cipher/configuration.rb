@@ -1,4 +1,6 @@
 class NCipher::Configuration
+  include NCipher::ArgumentValidation
+
   attr_reader :seed
   attr_accessor :delimiter
 
@@ -11,10 +13,24 @@ class NCipher::Configuration
     @delimiter = '〜'
   end
 
-  # 独自のセッター
-  # 引数を1文字づつに分割した配列をインスタンス変数へ格納
   def seed=(string)
     @seed = string.chars
+  end
+
+  args_validation :seed=, 'Seed must be 2 to 36 characters.' do |seed|
+    seed.length.between?(2, 36)
+  end
+
+  args_validation :seed=, 'Character is duplicated in seed.' do |seed|
+    seed.length == seed.chars.uniq.length
+  end
+
+  args_validation :seed=, 'Seed and delimiter are duplicated.' do |seed|
+    !seed.include?(@delimiter)
+  end
+
+  args_validation :delimiter=, 'Delimiter and seed are duplicated.' do |delimiter|
+    !@seed.join.include?(delimiter)
   end
 end
 
