@@ -59,30 +59,3 @@ NCipher.encode 'にゃんぱす'
 NCipher.decode 'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ'
 #=> "にゃんぱす"
 ```
-
-### Command
-
-シード値と区切り文字は以下の環境変数でも設定できます
-
-- `NCIPHER_SEED` : シード値
-- `NCIPHER_DELIMITER` : 区切り文字
-
-```shellsession
-$ # encode
-$ n_cipher encode 'にゃんぱす'
-ぱすすにすに〜ぱすすゃぱす〜ぱすすんんに〜ぱすすゃにゃ〜ぱすすににん〜
-$ n_cipher encode --seed 'おうどん' --delimiter 'ひげ' 'にゃんぱす'
-んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ
-```
-
-```shellsession
-$ # decode
-$ n_cipher decode --seed 'おうどん' --delimiter 'ひげ' 'んおおうどどんひげんおおどおおんひげんおおどうおんひげんおおうんおうひげんおおううどうひげ'
-にゃんぱす
-```
-
-```shellsession
-$ # support STDIN
-$ renge | n_cipher encode
-んんぱんにぱに〜ゃぱんぱゃゃん〜ぱすすにぱゃ〜ぱすすゃにぱ〜ぱすすゃすゃ〜すににゃぱに〜ゃんゃんぱゃぱ〜ゃぱゃんんぱぱ〜ぱすすににに〜ぱすすにゃぱ〜ぱすすんんに〜ぱすすにぱす〜すにすんんんゃ〜
-```
