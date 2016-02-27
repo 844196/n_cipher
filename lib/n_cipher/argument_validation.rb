@@ -55,9 +55,11 @@ module NCipher::ArgumentValidation
     def define_proxy_method(owner, name)
       owner.class_eval do
         define_method(name) do |*args, &block|
-          validations = ::NCipher::ArgumentValidation.validations.tap do |hash|
-            break hash.has_key?(self.class) ? hash[self.class] : hash[self.singleton_class]
-          end
+          validations = ::NCipher::ArgumentValidation
+            .validations
+            .values_at(self.class, self.singleton_class)
+            .compact
+            .each_with_object({}) {|orig_h,rtn_h| rtn_h.merge!(orig_h) }
 
           validations["__#{name}__"].each do |pattern|
             # ブロックをインスタンスのコンテキストで評価
