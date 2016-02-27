@@ -1,3 +1,4 @@
+module NCipher; end
 module NCipher::ArgumentValidation
   @@validations = {}
 
