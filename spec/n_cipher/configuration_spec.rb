@@ -3,7 +3,7 @@ describe 'NCipher.configure' do
 
   it 'シード値が変更できること' do
     expect { NCipher.configure {|config| config.seed = '890' } }.not_to raise_error
-    expect(NCipher.config.seed).to eq(%w(8 9 0))
+    expect(NCipher.config.seed).to eq('890')
   end
 
   it 'デリミタが変更できること' do
@@ -31,7 +31,7 @@ describe 'NCipher::Configuration' do
 
     it 'シード値が変更できること' do
       NCipher.config.seed = '123'
-      expect(NCipher.config.seed).to eq(%w(1 2 3))
+      expect(NCipher.config.seed).to eq('123')
     end
 
     context 'シード値が1文字の場合' do
@@ -110,7 +110,7 @@ describe 'NCipher::Configuration' do
 
     it '設定値がデフォルトに戻ること' do
       NCipher.config.reset
-      expect(NCipher.config.seed).to eq(%w(に ゃ ん ぱ す))
+      expect(NCipher.config.seed).to eq('にゃんぱす')
       expect(NCipher.config.delimiter).to eq('〜')
     end
   end

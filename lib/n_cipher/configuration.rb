@@ -1,45 +1,45 @@
+require_relative 'argument_validation'
+
+module NCipher; end
 class NCipher::Configuration
   include NCipher::ArgumentValidation
 
-  attr_reader :seed
-  attr_accessor :delimiter
-
-  def initialize
-    reset
+  def initialize(hash, &block)
+    hash.each(&method(:set_attribute))
+    hash.each(&method(:define_accessor))
+    define_reseter(hash)
+    yield(self) if block_given?
   end
 
-  def reset
-    @seed      = 'にゃんぱす'.chars
-    @delimiter = '〜'
+  def to_h
+    instance_variables.map(&:to_s).each_with_object({}) do |key, rtn_hash|
+      rtn_hash[key.sub(/\A@/, '').to_sym] = instance_variable_get(key)
+    end
   end
 
-  def seed=(string)
-    @seed = string.chars
+  def add_validation(name, message=nil, &validation)
+    singleton_class.class_eval { args_validation(name, message, &validation) }
   end
 
-  args_validation :seed=, 'Seed must be 2 to 36 characters.' do |seed|
-    seed.length.between?(2, 36)
+  private
+
+  def define_reseter(initial_hash)
+    define_singleton_method(:reset) { initial_hash.each(&method(:set_attribute)); self }
   end
 
-  args_validation :seed=, 'Character is duplicated in seed.' do |seed|
-    seed.length == seed.chars.uniq.length
+  def define_reader(name)
+    define_singleton_method(name) { instance_variable_get("@#{name}") }
   end
 
-  args_validation :seed=, 'Seed and delimiter are duplicated.' do |seed|
-    !seed.include?(@delimiter)
+  def define_writer(name)
+    define_singleton_method("#{name}=") {|arg| instance_variable_set("@#{name}", arg) }
   end
 
-  args_validation :delimiter=, 'Delimiter and seed are duplicated.' do |delimiter|
-    !@seed.join.include?(delimiter)
-  end
-end
-
-class << NCipher
-  def config
-    @config ||= NCipher::Configuration.new
+  def define_accessor((name, *))
+    %i(reader writer).each {|function| __send__("define_#{function}", name) }
   end
 
-  def configure(&block)
-    block.call(config)
+  def set_attribute((name, value))
+    instance_variable_set("@#{name}", value)
   end
 end
