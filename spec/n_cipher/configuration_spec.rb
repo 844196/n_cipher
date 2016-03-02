@@ -1,117 +1,49 @@
-describe 'NCipher.configure' do
-  after { NCipher.config.reset }
-
-  it 'シード値が変更できること' do
-    expect { NCipher.configure {|config| config.seed = '890' } }.not_to raise_error
-    expect(NCipher.config.seed).to eq('890')
-  end
-
-  it 'デリミタが変更できること' do
-    expect { NCipher.configure {|config| config.delimiter = ',' } }.not_to raise_error
-    expect(NCipher.config.delimiter).to eq(',')
-  end
-end
-
-describe 'NCipher.config' do
-  after { NCipher.config.reset }
-
-  it 'Configurationクラスのインスタンスオブジェクトが返却されること' do
-    expect(NCipher.config.class).to eq(NCipher::Configuration)
-  end
-end
-
 describe 'NCipher::Configuration' do
-  describe '#seed' do
-    it { expect(NCipher.config).to respond_to(:seed) }
+  before { @config = NCipher::Configuration.new(:foo => 1, :bar => 2) }
+
+  describe 'getter' do
+    it { expect(@config.foo).to eq(1) }
+    it { expect(@config.bar).to eq(2) }
+    it { expect { @config.hoge }.to raise_error(NoMethodError) }
   end
 
-  describe '#seed=' do
-    before { NCipher.config.reset }
-    after  { NCipher.config.reset }
-
-    it 'シード値が変更できること' do
-      NCipher.config.seed = '123'
-      expect(NCipher.config.seed).to eq('123')
-    end
-
-    context 'シード値が1文字の場合' do
-      it { expect { NCipher.config.seed = '1' }
-        .to raise_error(ArgumentError, 'Seed must be 2 to 36 characters.') }
-    end
-
-    context 'シード値が2文字の場合' do
-      it { expect { NCipher.config.seed = '12' }.not_to raise_error }
-    end
-
-    context 'シード値が35文字の場合' do
-      it { expect { NCipher.config.seed = [*'0'..'9', *'a'..'y'].join }.not_to raise_error }
-    end
-
-    context 'シード値が36文字の場合' do
-      it { expect { NCipher.config.seed = [*'0'..'9', *'a'..'z'].join }.not_to raise_error }
-    end
-
-    context 'シード値が37文字の場合' do
-      it { expect { NCipher.config.seed = [*'0'..'9', *'a'..'z', '!'].join }
-        .to raise_error(ArgumentError, 'Seed must be 2 to 36 characters.') }
-    end
-
-    context 'シード値が "ABC" の場合' do
-      it { expect { NCipher.config.seed = 'ABC' }.not_to raise_error }
-    end
-
-    context 'シード値が "AAB" の場合' do
-      it { expect { NCipher.config.seed = 'AAB' }.to raise_error(ArgumentError, 'Character is duplicated in seed.') }
-    end
-
-    context 'デリミタが "," の時' do
-      before { NCipher.config.delimiter = ',' }
-      after  { NCipher.config.reset }
-
-      context 'シード値が "ABC" の場合' do
-        it { expect { NCipher.config.seed = 'ABC' }.not_to raise_error }
-      end
-
-      context 'シード値が "AB," の場合' do
-        it { expect { NCipher.config.seed = 'AB,' }.to raise_error(ArgumentError, 'Seed and delimiter are duplicated.') }
-      end
-    end
+  describe 'setter' do
+    it { @config.foo = 3; expect(@config.foo).to eq(3) }
+    it { @config.bar = 4; expect(@config.bar).to eq(4) }
+    it { expect { @config.hoge = 5 }.to raise_error(NoMethodError) }
   end
 
-  describe '#delimiter' do
-    it { expect(NCipher.config).to respond_to(:delimiter) }
-  end
-
-  describe '#delimiter=' do
-    before { NCipher.config.reset }
-    after  { NCipher.config.reset }
-
-    it 'デリミタが変更できること' do
-      NCipher.config.delimiter = ','
-      expect(NCipher.config.delimiter).to eq(',')
-    end
-
-    context 'シード値が "AB," の時' do
-      before { NCipher.config.seed = 'AB,' }
-      after  { NCipher.config.reset }
-
-      context 'デリミタが "-" の場合' do
-        it { expect { NCipher.config.delimiter = '-' }.not_to raise_error }
-      end
-
-      context 'デリミタが "," の場合' do
-        it { expect { NCipher.config.delimiter = ',' }.to raise_error(ArgumentError, 'Delimiter and seed are duplicated.') }
-      end
-    end
+  describe '#to_h' do
+    it { expect(@config.to_h).to eq({:foo => 1, :bar => 2}) }
+    it { @config.foo = 3; expect(@config.to_h).to eq({:foo => 3, :bar => 2}) }
   end
 
   describe '#reset' do
-    before { NCipher.config.seed = 'ABC'; NCipher.config.delimiter = ',' }
+    it do
+      @config.foo = '123'
+      @config.bar = '456'
+      expect { @config.reset }.not_to raise_error
+      expect(@config.to_h).to eq({:foo => 1, :bar => 2})
+    end
+  end
 
-    it '設定値がデフォルトに戻ること' do
-      NCipher.config.reset
-      expect(NCipher.config.seed).to eq('にゃんぱす')
-      expect(NCipher.config.delimiter).to eq('〜')
+  describe '#add_validation' do
+    before do
+      @config = NCipher::Configuration.new(:hoge => 123, :fuga => 456) do |setter|
+        setter.add_validation(:hoge=, 'must be a fixnum') {|arg| arg.is_a? Fixnum }
+      end
+    end
+
+    it do
+      expect { @config.hoge = 789 }.not_to raise_error
+      expect(@config.hoge).to eq(789)
+      expect { @config.hoge = '789' }.to raise_error(ArgumentError, 'must be a fixnum')
+    end
+
+    it do
+      expect { @config.fuga = 789 }.not_to raise_error
+      expect(@config.fuga).to eq(789)
+      expect { @config.fuga = '789' }.not_to raise_error
     end
   end
 end
